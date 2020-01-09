@@ -8,26 +8,22 @@ import static java.util.Arrays.asList;
 
 public final class Koans {
 
-    @SuppressWarnings("serial")
-    static final class StudyRequest extends AssertionError {
-    }
-
-    @SafeVarargs
-    @SuppressWarnings("varargs")
-    public static void learn(String message, Fn0<Boolean>... assertions) {
-        if (!and().foldMap(assertion -> Try.trying(assertion)
-                               .catching(StudyRequest.class, mr -> false)
-                               .orThrow(),
-                           asList(assertions)))
-            throw new AssertionError("Reflect on <" + message + ">");
-    }
-
     public static Object __ = new Object() {
         @Override
         public String toString() {
             return "__";
         }
     };
+
+    @SafeVarargs
+    @SuppressWarnings("varargs")
+    public static void learn(String message, Fn0<Boolean>... assertions) {
+        if (!and().foldMap(assertion -> Try.trying(assertion)
+                                   .catching(StudyRequest.class, mr -> false)
+                                   .orThrow(),
+                           asList(assertions)))
+            throw new AssertionError("Reflect on <" + message + ">");
+    }
 
     public static <A> A __() {
         throw new StudyRequest();
@@ -43,5 +39,9 @@ public final class Koans {
 
     public static <A, B, C, D> D __(A a, B b, C c) {
         throw new StudyRequest();
+    }
+
+    @SuppressWarnings("serial")
+    static final class StudyRequest extends AssertionError {
     }
 }
