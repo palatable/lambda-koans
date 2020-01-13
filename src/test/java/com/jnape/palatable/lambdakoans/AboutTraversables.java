@@ -190,7 +190,7 @@ public class AboutTraversables {
         Either<String, LambdaIterable<Boolean>> errorOrBooleanResults =
             oneTwoThree.traverse(isEvenWithNegativesDisallowed, Either::right);
         assertThat(errorOrBooleanResults.fmap(LambdaIterable::unwrap),
-                   isRightThat(iterates(__(), __(), __())));
+                   isRightThat(iterates(/* ??? */)));
 
         LambdaIterable<Integer> negatives = LambdaIterable.wrap(asList(-1, -2, -3));
         Either<String, LambdaIterable<Boolean>> errorOrEvenResults =
@@ -211,19 +211,19 @@ public class AboutTraversables {
         List<String> greetings = new LinkedList<>();
 
         Fn1<String, IO<Integer>> sayHelloAndReturnNameLength = name -> io(() -> {
-            greetings.add(format("Hello, %s", name));
+            greetings.add(format("Hello, %s!", name));
             return name.length();
         });
 
         IO<Maybe<Integer>> traverseJustAliceBrady = just("Alice Brady").traverse(sayHelloAndReturnNameLength, IO::io);
         assertThat(traverseJustAliceBrady,
-                   yieldsValue(__()));
+                   yieldsValue(equalTo(__)));
 
         IO<Maybe<Integer>> traverseNothing = Maybe.<String>nothing().traverse(sayHelloAndReturnNameLength, IO::io);
         assertThat(traverseNothing,
-                   yieldsValue(__()));
+                   yieldsValue(equalTo(__)));
 
         assertThat(greetings,
-                   iterates(__()));
+                   iterates(/* ??? */));
     }
 }
