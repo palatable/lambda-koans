@@ -1,4 +1,4 @@
-package com.jnape.palatable.lambdakoans.maybe;
+package com.jnape.palatable.lambdakoans;
 
 import com.jnape.palatable.lambda.adt.Maybe;
 import org.junit.Test;
@@ -7,7 +7,6 @@ import java.util.Optional;
 
 import static com.jnape.palatable.lambda.adt.Either.left;
 import static com.jnape.palatable.lambda.adt.Either.right;
-import static com.jnape.palatable.lambda.adt.Maybe.fromEither;
 import static com.jnape.palatable.lambda.adt.Maybe.just;
 import static com.jnape.palatable.lambda.adt.Maybe.maybe;
 import static com.jnape.palatable.lambdakoans.Koans.__;
@@ -77,8 +76,5 @@ public class AboutMaybe {
     public void fromEitherConvertsEitherToMaybeByForgettingTheLeftValue() {
         assertThat(Maybe.fromEither(right(1)), equalTo(__));
         assertThat(Maybe.<Integer>fromEither(left("no value")), equalTo(__));
-
-        assertThat(Maybe.fromOptional(Optional.of(1)), equalTo(__));
-        assertThat(Maybe.fromOptional(Optional.<Integer>empty()), equalTo(__));
     }
 }
