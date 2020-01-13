@@ -55,26 +55,26 @@ public class AboutMaybe {
     }
 
     @Test
-    public void toOptionalConvertsMaybeToJavaOptional() {
-        assertThat(just(1).toOptional(), equalTo(__));
-        assertThat(Maybe.<Integer>nothing().toOptional(), equalTo(__));
-    }
-
-    @Test
     public void fromOptionalConvertsJavaOptionalToMaybe() {
         assertThat(Maybe.fromOptional(Optional.of(1)), equalTo(__));
         assertThat(Maybe.fromOptional(Optional.<Integer>empty()), equalTo(__));
     }
 
     @Test
-    public void toEitherConvertsMaybeToEitherGivenLeftSideValue() {
-        assertThat(just(1).toEither(() -> "no value"), equalTo(right(__)));
-        assertThat(Maybe.<Integer>nothing().toEither(() -> "no value"), equalTo(left(__)));
+    public void toOptionalConvertsMaybeToJavaOptional() {
+        assertThat(just(1).toOptional(), equalTo(__));
+        assertThat(Maybe.<Integer>nothing().toOptional(), equalTo(__));
     }
 
     @Test
     public void fromEitherConvertsEitherToMaybeByForgettingTheLeftValue() {
         assertThat(Maybe.fromEither(right(1)), equalTo(__));
         assertThat(Maybe.<Integer>fromEither(left("no value")), equalTo(__));
+    }
+
+    @Test
+    public void toEitherConvertsMaybeToEitherGivenLeftSideValue() {
+        assertThat(just(1).toEither(() -> "no value"), equalTo(right(__)));
+        assertThat(Maybe.<Integer>nothing().toEither(() -> "no value"), equalTo(left(__)));
     }
 }
