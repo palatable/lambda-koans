@@ -24,11 +24,11 @@ import static com.jnape.palatable.lambdakoans.Koans.__;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static testsupport.matchers.IOMatcher.yieldsValue;
 import static testsupport.matchers.IterableMatcher.iterates;
-import static testsupport.matchers.LeftMatcher.isLeftThat;
-import static testsupport.matchers.RightMatcher.isRightThat;
+import static testsupport.matchers.EitherMatcher.isLeftThat;
+import static testsupport.matchers.EitherMatcher.isRightThat;
 
 public class AboutTraversables {
 
