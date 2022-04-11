@@ -14,7 +14,7 @@ import static com.jnape.palatable.lambda.functions.builtin.fn2.Take.take;
 import static com.jnape.palatable.lambdakoans.Koans.__;
 import static java.util.Arrays.asList;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static testsupport.matchers.IterableMatcher.iterates;
 
 public class AboutFunctors {
