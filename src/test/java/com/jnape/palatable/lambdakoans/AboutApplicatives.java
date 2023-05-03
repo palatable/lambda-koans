@@ -2,7 +2,11 @@ package com.jnape.palatable.lambdakoans;
 
 import com.jnape.palatable.lambda.adt.Either;
 import com.jnape.palatable.lambda.adt.Maybe;
+import com.jnape.palatable.lambda.adt.hlist.Tuple2;
 import com.jnape.palatable.lambda.functions.Fn1;
+import com.jnape.palatable.lambda.functions.Fn3;
+import com.jnape.palatable.lambda.functions.builtin.fn3.LiftA2;
+import com.jnape.palatable.lambda.functions.builtin.fn4.LiftA3;
 import com.jnape.palatable.lambda.functor.Applicative;
 import com.jnape.palatable.lambda.functor.builtin.Lazy;
 import com.jnape.palatable.lambda.traversable.LambdaIterable;
@@ -14,6 +18,7 @@ import static com.jnape.palatable.lambda.adt.Either.left;
 import static com.jnape.palatable.lambda.adt.Either.right;
 import static com.jnape.palatable.lambda.adt.Maybe.just;
 import static com.jnape.palatable.lambda.adt.Maybe.nothing;
+import static com.jnape.palatable.lambda.adt.hlist.HList.tuple;
 import static com.jnape.palatable.lambda.functions.Fn1.fn1;
 import static com.jnape.palatable.lambda.functions.builtin.fn1.Repeat.repeat;
 import static com.jnape.palatable.lambda.functions.builtin.fn2.Take.take;
@@ -87,5 +92,29 @@ public class AboutApplicatives {
         Maybe<String> nothingToString = nothing.zip(expensiveWayToGetMaybeToString.apply(100_000));
         assertThat(nothingToString, equalTo(nothing()));
         assertThat(computed.get(), equalTo(100_000));
+    }
+
+    @Test
+    public void functionIsApplicative() {
+        Fn1<String, Integer> strLen = String::length;
+        Fn1<String, String> toUpper = String::toUpperCase;
+
+        // Result of unary function calls are passed to mapping function as arguments
+        Fn1<String, Tuple2<Integer, String>> lengthAndUppercase = LiftA2.liftA2(Tuple2::tuple, strLen, toUpper);
+        assertThat(lengthAndUppercase.apply("hello world"), equalTo(tuple(11, "HELLO WORLD")));
+
+        Fn1<Integer, Integer> mod3 = i -> i % 3;
+        Fn1<Integer, Integer> div3 = i -> i / 3;
+
+        Fn1<Integer, String> showDivision = LiftA2.liftA2((divided, remainder) -> String.format("%d * 3 + %d", divided, remainder), div3, mod3);
+        assertThat(showDivision.apply(10), equalTo("3 * 3 + 1"));
+
+
+        Fn1<String, Integer> findStart = s -> s.indexOf('j');
+        Fn1<String, Integer> findEnd = s -> s.indexOf(' ');
+        Fn3<String, Integer, Integer, String> cutString = String::substring;
+
+        Fn1<String, String> transformAndCut = LiftA3.liftA3(cutString, toUpper, findStart, findEnd);
+        assertThat(transformAndCut.apply("hellojava world"), equalTo("JAVA"));
     }
 }
