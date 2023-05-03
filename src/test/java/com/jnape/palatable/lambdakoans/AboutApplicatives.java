@@ -9,9 +9,12 @@ import com.jnape.palatable.lambda.functions.builtin.fn3.LiftA2;
 import com.jnape.palatable.lambda.functions.builtin.fn4.LiftA3;
 import com.jnape.palatable.lambda.functor.Applicative;
 import com.jnape.palatable.lambda.functor.builtin.Lazy;
+import com.jnape.palatable.lambda.io.IO;
 import com.jnape.palatable.lambda.traversable.LambdaIterable;
 import org.junit.Test;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.jnape.palatable.lambda.adt.Either.left;
@@ -116,5 +119,38 @@ public class AboutApplicatives {
 
         Fn1<String, String> transformAndCut = LiftA3.liftA3(cutString, toUpper, findStart, findEnd);
         assertThat(transformAndCut.apply("hellojava world"), equalTo("JAVA"));
+    }
+
+    @Test
+    public void applicativeRepresentsParallelism() throws ExecutionException, InterruptedException {
+        IO<Integer> foo = IO.io(() -> {
+            Thread.sleep(2_000);
+            return 14;
+        });
+
+        IO<Integer> bar = IO.io(() -> {
+            Thread.sleep(2_000);
+            return 28;
+        });
+
+        IO<Integer> applicativeInIo = LiftA2.liftA2(Integer::sum, foo, bar);
+
+        long singleThreadStart = System.currentTimeMillis();
+
+        applicativeInIo
+                .flatMap(result -> IO.io(() -> assertThat(result, equalTo(42))))
+                .unsafePerformIO();
+
+        System.out.printf("Single thread execution took %d seconds%n", (System.currentTimeMillis() - singleThreadStart) / 1000);
+
+        // If we have multiple threads available, function evaluation is done in parallel
+        long multipleThreadStart = System.currentTimeMillis();
+
+        applicativeInIo
+                .flatMap(result -> IO.io(() -> assertThat(result, equalTo(42))))
+                .unsafePerformAsyncIO(Executors.newFixedThreadPool(2))
+                .get();
+
+        System.out.printf("Single thread execution took %d seconds%n", (System.currentTimeMillis() - multipleThreadStart) / 1000);
     }
 }
