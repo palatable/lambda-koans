@@ -68,6 +68,6 @@ public class AboutFunctors {
         Fn1<Integer, Integer> inc    = x -> x + 1;
 
         Fn1<String, Integer> lengthThenInc = length.fmap(inc); // fmap for Fn1 is just left-to-right composition!
-        assertThat(lengthThenInc.apply("13 characters"), __());
+        assertThat(lengthThenInc.apply("13 characters"), equalTo(__));
     }
 }

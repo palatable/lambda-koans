@@ -26,26 +26,27 @@ import static com.jnape.palatable.lambda.functions.Fn1.fn1;
 import static com.jnape.palatable.lambda.functions.builtin.fn1.Repeat.repeat;
 import static com.jnape.palatable.lambda.functions.builtin.fn2.Take.take;
 import static com.jnape.palatable.lambda.functor.builtin.Lazy.lazy;
+import static com.jnape.palatable.lambdakoans.Koans.__;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static testsupport.matchers.IterableMatcher.iterates;
 
 public class AboutApplicatives {
+
     @Test
     public void applicativesZipEmbeddedValuesWithEmbeddedFunctions() {
         Fn1<Integer, Integer> inc = x -> x + 1;
 
         assertThat(just(9).zip(just(inc)), equalTo(just(10)));
-        assertThat(just(15).zip(just(inc)), equalTo(just(16)));
-        // Explicit types on the nothing help the compiler
-        assertThat(Maybe.<Integer>nothing().zip(just(inc)), equalTo(nothing()));
+        assertThat(just(15).zip(just(inc)), equalTo(just(__)));
+        // Explicit types help the compiler
+        assertThat(Maybe.<Integer>nothing().zip(just(inc)), equalTo(__));
 
         Fn1<? super String, ? extends Integer> getStringLength = String::length;
-        assertThat(right("Hello").zip(right(getStringLength)), equalTo(right(5)));
-        assertThat(right("World!").zip(right(getStringLength)), equalTo(right(6)));
-        // Explicit types on the nothing help the compiler
-        assertThat(Either.<String, String>left("whoops").zip(right(getStringLength)), equalTo(left("whoops")));
+        assertThat(right("Hello").zip(right(getStringLength)), equalTo(__));
+        assertThat(right("World!").zip(right(getStringLength)), equalTo(__));
+        assertThat(Either.<String, String>left("whoops").zip(right(getStringLength)), equalTo(left(__)));
 
         // Moving on to LambdaIterables, where "zipping" is more obvious
         LambdaIterable<Integer> oneThroughThree = LambdaIterable.wrap(asList(1, 2, 3));
@@ -58,7 +59,7 @@ public class AboutApplicatives {
 
         Fn1<Integer, Integer> times3 = x -> x * 3;
         LambdaIterable<Fn1<? super Integer, ? extends Integer>> allFunctions = LambdaIterable.wrap(asList(inc, dec, times3));
-        assertThat(oneThroughThree.zip(allFunctions).unwrap(), iterates(2, 0, 3, 3, 1, 6, 4, 2, 9));
+        assertThat(oneThroughThree.zip(allFunctions).unwrap(), iterates(__()));
     }
 
     @Test
@@ -69,7 +70,7 @@ public class AboutApplicatives {
 
         LambdaIterable<Fn1<? super Integer, ? extends Integer>> wrappedInc = LambdaIterable.wrap(asList(inc));
         LambdaIterable<Integer> zippedOnes = infiniteOnes.zip(wrappedInc);
-        assertThat(take(3, zippedOnes.unwrap()), iterates(2, 2, 2));
+        assertThat(take(3, zippedOnes.unwrap()), iterates(__()));
 
         // We might lazily get a mapping function...
         AtomicInteger computed = new AtomicInteger(0);
@@ -88,13 +89,13 @@ public class AboutApplicatives {
         Maybe<Integer> nothing = nothing();
         Lazy<Maybe<String>> lazyNothingToString = nothing.lazyZip(lazyGetToString);
 
-        assertThat(lazyNothingToString.value(), equalTo(nothing()));
-        assertThat(computed.get(), equalTo(0));
+        assertThat(lazyNothingToString.value(), equalTo(__));
+        assertThat(computed.get(), equalTo(__));
 
         // zip, however, we've eagerly generated a mapping function
         Maybe<String> nothingToString = nothing.zip(expensiveWayToGetMaybeToString.apply(100_000));
-        assertThat(nothingToString, equalTo(nothing()));
-        assertThat(computed.get(), equalTo(100_000));
+        assertThat(nothingToString, equalTo(__));
+        assertThat(computed.get(), equalTo(__));
     }
 
     @Test
@@ -110,7 +111,7 @@ public class AboutApplicatives {
         Fn1<Integer, Integer> div3 = i -> i / 3;
 
         Fn1<Integer, String> showDivision = LiftA2.liftA2((divided, remainder) -> String.format("%d * 3 + %d", divided, remainder), div3, mod3);
-        assertThat(showDivision.apply(10), equalTo("3 * 3 + 1"));
+        assertThat(showDivision.apply(10), equalTo(__));
 
 
         Fn1<String, Integer> findStart = s -> s.indexOf('j');
@@ -118,7 +119,7 @@ public class AboutApplicatives {
         Fn3<String, Integer, Integer, String> cutString = String::substring;
 
         Fn1<String, String> transformAndCut = LiftA3.liftA3(cutString, toUpper, findStart, findEnd);
-        assertThat(transformAndCut.apply("hellojava world"), equalTo("JAVA"));
+        assertThat(transformAndCut.apply("hellojava world"), equalTo(__));
     }
 
     @Test
@@ -138,7 +139,7 @@ public class AboutApplicatives {
         long singleThreadStart = System.currentTimeMillis();
 
         applicativeInIo
-                .flatMap(result -> IO.io(() -> assertThat(result, equalTo(42))))
+                .flatMap(result -> IO.io(() -> assertThat(result, equalTo(__))))
                 .unsafePerformIO();
 
         System.out.printf("Single thread execution took %d seconds%n", (System.currentTimeMillis() - singleThreadStart) / 1000);
@@ -147,10 +148,10 @@ public class AboutApplicatives {
         long multipleThreadStart = System.currentTimeMillis();
 
         applicativeInIo
-                .flatMap(result -> IO.io(() -> assertThat(result, equalTo(42))))
+                .flatMap(result -> IO.io(() -> assertThat(result, equalTo(__))))
                 .unsafePerformAsyncIO(Executors.newFixedThreadPool(2))
                 .get();
 
-        System.out.printf("Single thread execution took %d seconds%n", (System.currentTimeMillis() - multipleThreadStart) / 1000);
+        System.out.printf("Multiple thread execution took %d seconds%n", (System.currentTimeMillis() - multipleThreadStart) / 1000);
     }
 }
