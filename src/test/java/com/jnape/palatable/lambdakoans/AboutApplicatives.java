@@ -7,7 +7,6 @@ import com.jnape.palatable.lambda.functions.Fn1;
 import com.jnape.palatable.lambda.functions.Fn3;
 import com.jnape.palatable.lambda.functions.builtin.fn3.LiftA2;
 import com.jnape.palatable.lambda.functions.builtin.fn4.LiftA3;
-import com.jnape.palatable.lambda.functor.Applicative;
 import com.jnape.palatable.lambda.functor.builtin.Lazy;
 import com.jnape.palatable.lambda.io.IO;
 import com.jnape.palatable.lambda.traversable.LambdaIterable;
@@ -40,6 +39,7 @@ public class AboutApplicatives {
 
         assertThat(just(9).zip(just(inc)), equalTo(just(10)));
         assertThat(just(15).zip(just(inc)), equalTo(just(__)));
+        assertThat(just(7).zip(nothing()), equalTo(__));
         // Explicit types help the compiler
         assertThat(Maybe.<Integer>nothing().zip(just(inc)), equalTo(__));
 
@@ -50,7 +50,7 @@ public class AboutApplicatives {
 
         // Moving on to LambdaIterables, where "zipping" is more obvious
         LambdaIterable<Integer> oneThroughThree = LambdaIterable.wrap(asList(1, 2, 3));
-        Applicative<Fn1<? super Integer, ? extends Integer>, LambdaIterable<?>> wrappedInc = LambdaIterable.wrap(asList(inc));
+        LambdaIterable<Fn1<? super Integer, ? extends Integer>> wrappedInc = LambdaIterable.wrap(asList(inc));
         assertThat(oneThroughThree.zip(wrappedInc).unwrap(), iterates(2, 3, 4));
 
         Fn1<Integer, Integer> dec = x -> x - 1;
@@ -60,42 +60,6 @@ public class AboutApplicatives {
         Fn1<Integer, Integer> times3 = x -> x * 3;
         LambdaIterable<Fn1<? super Integer, ? extends Integer>> allFunctions = LambdaIterable.wrap(asList(inc, dec, times3));
         assertThat(oneThroughThree.zip(allFunctions).unwrap(), iterates(__()));
-    }
-
-    @Test
-    public void lazyApplicatives() {
-        // Zipping LambdaIterables is lazy because LambdaIterables are lazy
-        LambdaIterable<Integer> infiniteOnes = LambdaIterable.wrap(repeat(1));
-        Fn1<Integer, Integer> inc = x -> x + 1;
-
-        LambdaIterable<Fn1<? super Integer, ? extends Integer>> wrappedInc = LambdaIterable.wrap(asList(inc));
-        LambdaIterable<Integer> zippedOnes = infiniteOnes.zip(wrappedInc);
-        assertThat(take(3, zippedOnes.unwrap()), iterates(__()));
-
-        // We might lazily get a mapping function...
-        AtomicInteger computed = new AtomicInteger(0);
-
-        Fn1<Integer, Maybe<Fn1<? super Integer, ? extends String>>> expensiveWayToGetMaybeToString = fn1((Integer n) -> {
-            for (int i = 0; i < n; i++) {
-                computed.incrementAndGet();
-            }
-            return just(Object::toString);
-        });
-
-        Lazy<Maybe<Fn1<? super Integer, ? extends String>>> lazyGetToString = lazy(() ->
-                expensiveWayToGetMaybeToString.apply(100_000_000));
-
-        // ...then apply it with lazyZip
-        Maybe<Integer> nothing = nothing();
-        Lazy<Maybe<String>> lazyNothingToString = nothing.lazyZip(lazyGetToString);
-
-        assertThat(lazyNothingToString.value(), equalTo(__));
-        assertThat(computed.get(), equalTo(__));
-
-        // zip, however, we've eagerly generated a mapping function
-        Maybe<String> nothingToString = nothing.zip(expensiveWayToGetMaybeToString.apply(100_000));
-        assertThat(nothingToString, equalTo(__));
-        assertThat(computed.get(), equalTo(__));
     }
 
     @Test
@@ -123,6 +87,43 @@ public class AboutApplicatives {
     }
 
     @Test
+    public void lazyApplicatives() {
+        // Zipping LambdaIterables is lazy because LambdaIterables are lazy
+        LambdaIterable<Integer> infiniteOnes = LambdaIterable.wrap(repeat(1));
+        Fn1<Integer, Integer> inc = x -> x + 1;
+
+        LambdaIterable<Fn1<? super Integer, ? extends Integer>> wrappedInc = LambdaIterable.wrap(asList(inc));
+        LambdaIterable<Integer> zippedOnes = infiniteOnes.zip(wrappedInc);
+        assertThat(take(3, zippedOnes.unwrap()), iterates(__()));
+
+        // We might lazily get a mapping function...
+        AtomicInteger computed = new AtomicInteger(0);
+
+        Fn1<Integer, Maybe<Fn1<? super Integer, ? extends String>>> expensiveWayToGetMaybeToString = fn1((Integer n) -> {
+            for (int i = 0; i < n; i++) {
+                computed.incrementAndGet();
+            }
+            return just(Object::toString);
+        });
+
+        Lazy<Maybe<Fn1<? super Integer, ? extends String>>> lazyGetToString = lazy(() ->
+                expensiveWayToGetMaybeToString.apply(100_000_000));
+
+        // ...then apply it with lazyZip.
+        Maybe<Integer> nothing = nothing();
+        // Note: unlike LambdaIterables, the Maybe inside is not itself lazy
+        Lazy<Maybe<String>> lazyNothingToString = nothing.lazyZip(lazyGetToString);
+
+        assertThat(lazyNothingToString.value(), equalTo(__));
+        assertThat(computed.get(), equalTo(__));
+
+        // zip, however, eagerly generates a mapping function
+        Maybe<String> nothingToString = nothing.zip(expensiveWayToGetMaybeToString.apply(100_000));
+        assertThat(nothingToString, equalTo(__));
+        assertThat(computed.get(), equalTo(__));
+    }
+
+    @Test(timeout = 6500)
     public void applicativeRepresentsParallelism() throws ExecutionException, InterruptedException {
         IO<Integer> foo = IO.io(() -> {
             Thread.sleep(2_000);
@@ -149,7 +150,8 @@ public class AboutApplicatives {
 
         applicativeInIo
                 .flatMap(result -> IO.io(() -> assertThat(result, equalTo(__))))
-                .unsafePerformAsyncIO(Executors.newFixedThreadPool(2))
+                // How many threads should we use?
+                .unsafePerformAsyncIO(Executors.newFixedThreadPool(__()))
                 .get();
 
         System.out.printf("Multiple thread execution took %d seconds%n", (System.currentTimeMillis() - multipleThreadStart) / 1000);
