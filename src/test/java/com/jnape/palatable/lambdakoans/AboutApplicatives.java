@@ -53,9 +53,11 @@ public class AboutApplicatives {
         LambdaIterable<Fn1<? super Integer, ? extends Integer>> wrappedInc = LambdaIterable.wrap(asList(inc));
         assertThat(oneThroughThree.zip(wrappedInc).unwrap(), iterates(2, 3, 4));
 
+        // Zipping a LambdaIterable computes the Cartesian product of values with functions
+        // rather than apply the functions to values pairwise
         Fn1<Integer, Integer> dec = x -> x - 1;
         LambdaIterable<Fn1<? super Integer, ? extends Integer>> twoFunctions = LambdaIterable.wrap(asList(inc, dec));
-        assertThat(oneThroughThree.zip(twoFunctions).unwrap(), iterates(2, 0, 3, 1, 4, 2));
+        assertThat(oneThroughThree.zip(twoFunctions).unwrap(), iterates(2, 0, 3, 1, 4, __()));
 
         Fn1<Integer, Integer> times3 = x -> x * 3;
         LambdaIterable<Fn1<? super Integer, ? extends Integer>> allFunctions = LambdaIterable.wrap(asList(inc, dec, times3));
