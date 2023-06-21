@@ -12,8 +12,7 @@ import static com.jnape.palatable.lambdakoans.Koans.__;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
-import static org.hamcrest.collection.IsIterableWithSize.iterableWithSize;
+import static testsupport.matchers.IterableMatcher.iterates;
 
 public class AboutFilter {
     @Test
@@ -23,7 +22,7 @@ public class AboutFilter {
         Iterable<String> strings = emptyList();
         Iterable<String> filteredStrings = filter(nonEmptyString, strings);
 
-        assertThat(filteredStrings, contains(Koans.<String>__("Replace with whatever strings you expect to be in filteredStrings")));
+        assertThat(filteredStrings, iterates(Koans.<String>__("Replace with whatever strings you expect to be in filteredStrings")));
     }
 
 
@@ -34,7 +33,7 @@ public class AboutFilter {
         Iterable<String> strings = asList("", "Hello", "", "World", "!");
         Iterable<String> filteredStrings = filter(nonEmptyString, strings);
 
-        assertThat(filteredStrings, contains(Koans.<String>__("Replace with whatever strings you expect to be in filteredStrings")));
+        assertThat(filteredStrings, iterates(Koans.<String>__("Replace with whatever strings you expect to be in filteredStrings")));
     }
 
     @Test
@@ -44,7 +43,7 @@ public class AboutFilter {
         Iterable<String> strings = asList("Hello", "World!", "Functional", "Code");
         Iterable<String> filteredStrings = __();
 
-        assertThat(filteredStrings, contains("Hello", "Code"));
+        assertThat(filteredStrings, iterates("Hello", "Code"));
     }
 
     @Test
@@ -54,7 +53,7 @@ public class AboutFilter {
         Iterable<Integer> ints = asList(1, 2, 3, 4, 5);
         Iterable<Integer> filteredInts = filter(alwaysTrue, ints);
 
-        assertThat(filteredInts, contains(Koans.<Integer>__("Replace with whatever strings you expect to be in filteredInts")));
+        assertThat(filteredInts, iterates(Koans.<Integer>__("Replace with whatever strings you expect to be in filteredInts")));
     }
 
     @Test
@@ -64,7 +63,7 @@ public class AboutFilter {
         Iterable<Integer> ints = asList(1, 2, 3, 4, 5);
         Iterable<Integer> filteredInts = filter(alwaysFalse, ints);
 
-        assertThat(filteredInts, iterableWithSize(__("Replace with the number of elements you expect filteredInts to be")));
+        assertThat(filteredInts, iterates(__("Replace with whatever strings you expect to be in filteredInts")));
     }
 
     @Test
@@ -74,7 +73,7 @@ public class AboutFilter {
         Iterable<Integer> ints = asList(1, 2, 3, 4, 5, 6);
         Iterable<Integer> filteredInts = filter(fn, ints);
 
-        assertThat(filteredInts, contains(2, 4, 6));
+        assertThat(filteredInts, iterates(2, 4, 6));
     }
 
     @Test
@@ -85,7 +84,7 @@ public class AboutFilter {
         List<String> strings = asList("", "a", "ab", "abc", "abcd", "abcde", "abcdef");
         Iterable<String> filteredInts = filter(isNotEmpty, filter(isEven, strings));
 
-        assertThat(filteredInts, contains("ab", "abcd", "abcdef"));
+        assertThat(filteredInts, iterates("ab", "abcd", "abcdef"));
     }
 
     // Complete AboutMap first
@@ -97,7 +96,7 @@ public class AboutFilter {
         Iterable<Integer> ints = asList(1, 6, 9, 14, 11, 32);
         Iterable<Integer> halvedEvens = __("Use Filter and Map with the above functions to return the even numbers divided by 2");
 
-        assertThat(halvedEvens, contains(3, 7, 16));
+        assertThat(halvedEvens, iterates(3, 7, 16));
     }
 
 }
