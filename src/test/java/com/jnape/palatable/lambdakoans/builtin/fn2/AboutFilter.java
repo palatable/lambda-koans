@@ -2,6 +2,7 @@ package com.jnape.palatable.lambdakoans.builtin.fn2;
 
 import com.jnape.palatable.lambda.functions.Fn1;
 import com.jnape.palatable.lambdakoans.Koans;
+import org.hamcrest.collection.IsIterableWithSize;
 import org.junit.Test;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
+import static org.hamcrest.collection.IsIterableWithSize.iterableWithSize;
 
 public class AboutFilter {
     @Test
@@ -62,7 +64,7 @@ public class AboutFilter {
         Iterable<Integer> ints = asList(1, 2, 3, 4, 5);
         Iterable<Integer> filteredInts = filter(alwaysFalse, ints);
 
-        assertThat(filteredInts, contains(Koans.<Integer>__("Replace with whatever strings you expect to be in filteredInts")));
+        assertThat(filteredInts, iterableWithSize(__("Replace with the number of elements you expect filteredInts to be")));
     }
 
     @Test
